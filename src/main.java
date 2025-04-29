@@ -54,12 +54,9 @@ public class InvestasiApp {
             System.out.println("1. Login");
             System.out.println("2. Exit");
             System.out.print("Pilih: ");
-            int pilih = scanner.nextInt();
-            scanner.nextLine();
-
-            if (pilih == 1) {
-                login();
-            } else if (pilih == 2) {
+            int pilih = getIntInput();
+            if (pilih == 1) login();
+            else if (pilih == 2) {
                 System.out.println("Keluar dari program.");
                 break;
             } else {
@@ -81,9 +78,7 @@ public class InvestasiApp {
         } else if (akunCustomer.containsKey(user) && akunCustomer.get(user).equals(pass)) {
             isAdmin = false;
             currentUser = user;
-            if (!portofolio.containsKey(currentUser)) {
-                portofolio.put(currentUser, new PortofolioCustomer());
-            }
+            portofolio.putIfAbsent(currentUser, new PortofolioCustomer());
             menuCustomer();
         } else {
             System.out.println("Login gagal. Username atau password salah.");
@@ -97,9 +92,7 @@ public class InvestasiApp {
             System.out.println("2. SBN");
             System.out.println("3. Logout");
             System.out.print("Pilih: ");
-            int pilih = scanner.nextInt();
-            scanner.nextLine();
-
+            int pilih = getIntInput();
             if (pilih == 1) menuAdminSaham();
             else if (pilih == 2) menuAdminSBN();
             else if (pilih == 3) {
@@ -119,9 +112,7 @@ public class InvestasiApp {
             System.out.println("2. Ubah Harga Saham");
             System.out.println("3. Kembali");
             System.out.print("Pilih: ");
-            int pilih = scanner.nextInt();
-            scanner.nextLine();
-
+            int pilih = getIntInput();
             if (pilih == 1) tambahSaham();
             else if (pilih == 2) ubahHargaSaham();
             else if (pilih == 3) break;
@@ -131,24 +122,24 @@ public class InvestasiApp {
 
     static void tambahSaham() {
         System.out.print("Kode Saham: ");
-        String kode = scanner.nextLine();
+        String kode = scanner.nextLine().toUpperCase();
         System.out.print("Nama Perusahaan: ");
         String nama = scanner.nextLine();
         System.out.print("Harga: ");
-        double harga = scanner.nextDouble();
+        double harga = getDoubleInput();
         daftarSaham.put(kode, new Saham(kode, nama, harga));
         System.out.println("Saham berhasil ditambahkan.");
     }
 
     static void ubahHargaSaham() {
         System.out.print("Kode Saham: ");
-        String kode = scanner.nextLine();
+        String kode = scanner.nextLine().toUpperCase();
         if (!daftarSaham.containsKey(kode)) {
             System.out.println("Saham tidak ditemukan.");
             return;
         }
         System.out.print("Harga baru: ");
-        double harga = scanner.nextDouble();
+        double harga = getDoubleInput();
         daftarSaham.get(kode).harga = harga;
         System.out.println("Harga saham berhasil diubah.");
     }
@@ -159,9 +150,7 @@ public class InvestasiApp {
             System.out.println("1. Tambah SBN");
             System.out.println("2. Kembali");
             System.out.print("Pilih: ");
-            int pilih = scanner.nextInt();
-            scanner.nextLine();
-
+            int pilih = getIntInput();
             if (pilih == 1) tambahSBN();
             else if (pilih == 2) break;
             else System.out.println("Pilihan salah.");
@@ -172,14 +161,13 @@ public class InvestasiApp {
         System.out.print("Nama SBN: ");
         String nama = scanner.nextLine();
         System.out.print("Bunga (%): ");
-        double bunga = scanner.nextDouble();
+        double bunga = getDoubleInput();
         System.out.print("Jangka Waktu (bulan): ");
-        int jangkaWaktu = scanner.nextInt();
-        scanner.nextLine();
+        int jangkaWaktu = getIntInput();
         System.out.print("Tanggal Jatuh Tempo: ");
         String tanggal = scanner.nextLine();
         System.out.print("Kuota Nasional: ");
-        double kuota = scanner.nextDouble();
+        double kuota = getDoubleInput();
         daftarSBN.put(nama, new SuratBerhargaNegara(nama, bunga, jangkaWaktu, tanggal, kuota));
         System.out.println("SBN berhasil ditambahkan.");
     }
@@ -194,9 +182,7 @@ public class InvestasiApp {
             System.out.println("5. Portofolio");
             System.out.println("6. Logout");
             System.out.print("Pilih: ");
-            int pilih = scanner.nextInt();
-            scanner.nextLine();
-
+            int pilih = getIntInput();
             if (pilih == 1) beliSaham();
             else if (pilih == 2) jualSaham();
             else if (pilih == 3) beliSBN();
@@ -212,18 +198,22 @@ public class InvestasiApp {
     }
 
     static void beliSaham() {
+        if (daftarSaham.isEmpty()) {
+            System.out.println("Belum ada saham yang tersedia.");
+            return;
+        }
         System.out.println("\n=== DAFTAR SAHAM ===");
         for (Saham saham : daftarSaham.values()) {
-            System.out.println(saham.kode + " - " + saham.namaPerusahaan + " - Rp" + saham.harga);
+            System.out.printf("%s - %s - Rp%.2f%n", saham.kode, saham.namaPerusahaan, saham.harga);
         }
         System.out.print("Masukkan kode saham yang ingin dibeli: ");
-        String kode = scanner.nextLine();
+        String kode = scanner.nextLine().toUpperCase();
         if (!daftarSaham.containsKey(kode)) {
             System.out.println("Kode saham tidak ditemukan.");
             return;
         }
         System.out.print("Jumlah lembar saham: ");
-        int jumlah = scanner.nextInt();
+        int jumlah = getIntInput();
         PortofolioCustomer port = portofolio.get(currentUser);
         port.sahamDimiliki.put(kode, port.sahamDimiliki.getOrDefault(kode, 0) + jumlah);
         System.out.println("Berhasil membeli saham.");
@@ -240,13 +230,13 @@ public class InvestasiApp {
             System.out.println(entry.getKey() + " - " + entry.getValue() + " lembar");
         }
         System.out.print("Masukkan kode saham yang ingin dijual: ");
-        String kode = scanner.nextLine();
+        String kode = scanner.nextLine().toUpperCase();
         if (!port.sahamDimiliki.containsKey(kode)) {
             System.out.println("Anda tidak memiliki saham ini.");
             return;
         }
         System.out.print("Jumlah lembar yang ingin dijual: ");
-        int jumlah = scanner.nextInt();
+        int jumlah = getIntInput();
         int milik = port.sahamDimiliki.get(kode);
         if (jumlah > milik) {
             System.out.println("Jumlah lembar melebihi yang dimiliki.");
@@ -258,9 +248,13 @@ public class InvestasiApp {
     }
 
     static void beliSBN() {
+        if (daftarSBN.isEmpty()) {
+            System.out.println("Belum ada SBN tersedia.");
+            return;
+        }
         System.out.println("\n=== DAFTAR SBN ===");
         for (SuratBerhargaNegara sbn : daftarSBN.values()) {
-            System.out.println(sbn.nama + " - Kuota: Rp" + sbn.kuotaNasional);
+            System.out.printf("%s - Kuota: Rp%.2f%n", sbn.nama, sbn.kuotaNasional);
         }
         System.out.print("Masukkan nama SBN yang ingin dibeli: ");
         String nama = scanner.nextLine();
@@ -269,7 +263,7 @@ public class InvestasiApp {
             return;
         }
         System.out.print("Nominal pembelian: ");
-        double nominal = scanner.nextDouble();
+        double nominal = getDoubleInput();
         SuratBerhargaNegara sbn = daftarSBN.get(nama);
         if (nominal > sbn.kuotaNasional) {
             System.out.println("Kuota nasional tidak mencukupi.");
@@ -283,29 +277,63 @@ public class InvestasiApp {
 
     static void simulasiSBN() {
         System.out.print("Masukkan nominal investasi: ");
-        double nominal = scanner.nextDouble();
+        double nominal = getDoubleInput();
         System.out.print("Masukkan bunga tahunan (%): ");
-        double bunga = scanner.nextDouble();
+        double bunga = getDoubleInput();
         double hasil = bunga / 12 / 100 * 0.9 * nominal;
-        System.out.println("Simulasi bunga per bulan: Rp" + hasil);
+        System.out.printf("Simulasi bunga per bulan: Rp%.2f%n", hasil);
     }
 
     static void lihatPortofolio() {
         PortofolioCustomer port = portofolio.get(currentUser);
         System.out.println("\n=== PORTOFOLIO ===");
         System.out.println("Saham:");
-        for (String kode : port.sahamDimiliki.keySet()) {
-            Saham saham = daftarSaham.get(kode);
-            int lembar = port.sahamDimiliki.get(kode);
-            double totalPembelian = lembar * saham.harga;
-            System.out.println(kode + " - " + lembar + " lembar - Nilai pasar: Rp" + totalPembelian);
+        if (port.sahamDimiliki.isEmpty()) {
+            System.out.println("  (Tidak ada saham)");
+        } else {
+            for (String kode : port.sahamDimiliki.keySet()) {
+                Saham saham = daftarSaham.get(kode);
+                int lembar = port.sahamDimiliki.get(kode);
+                double totalPembelian = lembar * saham.harga;
+                System.out.printf("  %s - %d lembar - Nilai pasar: Rp%.2f%n", kode, lembar, totalPembelian);
+            }
         }
         System.out.println("SBN:");
-        for (String nama : port.sbnDimiliki.keySet()) {
-            double nominal = port.sbnDimiliki.get(nama);
-            SuratBerhargaNegara sbn = daftarSBN.get(nama);
-            double bungaBulanan = sbn.bunga / 12 / 100 * 0.9 * nominal;
-            System.out.println(nama + " - Rp" + nominal + " - Bunga/bulan: Rp" + bungaBulanan);
+        if (port.sbnDimiliki.isEmpty()) {
+            System.out.println("  (Tidak ada SBN)");
+        } else {
+            for (String nama : port.sbnDimiliki.keySet()) {
+                double nominal = port.sbnDimiliki.get(nama);
+                SuratBerhargaNegara sbn = daftarSBN.get(nama);
+                double bungaBulanan = sbn.bunga / 12 / 100 * 0.9 * nominal;
+                System.out.printf("  %s - Rp%.2f - Bunga/bulan: Rp%.2f%n", nama, nominal, bungaBulanan);
+            }
+        }
+    }
+
+    static int getIntInput() {
+        while (true) {
+            try {
+                int input = scanner.nextInt();
+                scanner.nextLine();
+                return input;
+            } catch (InputMismatchException e) {
+                System.out.print("Masukkan angka yang valid: ");
+                scanner.nextLine();
+            }
+        }
+    }
+
+    static double getDoubleInput() {
+        while (true) {
+            try {
+                double input = scanner.nextDouble();
+                scanner.nextLine();
+                return input;
+            } catch (InputMismatchException e) {
+                System.out.print("Masukkan angka desimal yang valid: ");
+                scanner.nextLine();
+            }
         }
     }
 }
